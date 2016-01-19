@@ -1,0 +1,54 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "ru.sm.gradle"
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+configurations.all {
+    exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    exclude group: 'org.json', module: 'json'
+    exclude group: 'org.eclipse.jetty'
+    exclude group: 'com.fasterxml.jackson.core'
+    exclude group: 'com.jayway.jsonpath'
+
+    resolutionStrategy {
+        componentSelection {
+            all { selection ->
+                if (selection.candidate.version.contains('alpha')
+                        || selection.candidate.version.contains('beta')) {
+                    selection.reject("rejecting non-final")
+                }
+            }
+            withModule('com.github.tomakehurst:wiremock') { selection ->
+                if (selection.candidate.version == "1.58") {
+                    selection.reject("known bad version")
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    compile 'com.github.tomakehurst:wiremock:+'
+}
